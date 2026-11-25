@@ -1,0 +1,431 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Elefant</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600&family=Inter:wght@400;500&display=swap" rel="stylesheet">
+<style>
+/* VOICE: a quiet, rigorous personal notebook; air and fine detail.
+   IDEA: a star atlas of knowledge: one centre, five branches radiating out, threads between distant fields.
+   PICTURE: a radial tree held by a soft force layout, cross-connections drawn as curves through the centre.
+   COLOUR and TYPE: charcoal ground in both themes, one 3b1b-like hue per branch; Source Serif 4 titles, Inter UI.
+   LAYOUT: atlas left, reading panel right; stacked atlas-then-panel below 900px. */
+:root{color-scheme:dark;--bg:#16171b;--bg2:#1d1f24;--line:#2c2f36;--ink:#ecebe6;--mute:#a3a29c;--faint:#77766f;--acc:#58C4DD}
+*{box-sizing:border-box;min-width:0}
+html,body{height:100%}
+body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 Inter,system-ui,sans-serif;overflow-x:clip}
+a{color:inherit}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:2px solid var(--acc);outline-offset:2px;border-radius:6px}
+header{display:flex;align-items:center;gap:16px;flex-wrap:wrap;padding:14px max(3vw,16px);border-bottom:1px solid var(--line)}
+.brand{display:flex;align-items:baseline;gap:12px;background:none;border:0;padding:0}
+.brand b{font:600 26px/1 "Source Serif 4",Georgia,serif}
+.brand span{color:var(--mute);font-size:14px}
+.search{margin-left:auto;position:relative;width:min(320px,100%)}
+.search input{width:100%;height:44px;border-radius:10px;border:1px solid var(--line);background:var(--bg2);color:var(--ink);padding:0 14px;font:16px Inter,sans-serif}
+.search ul{position:absolute;z-index:5;top:48px;left:0;right:0;margin:0;padding:6px;list-style:none;background:var(--bg2);border:1px solid var(--line);border-radius:10px;max-height:340px;overflow:auto}
+.search li button{width:100%;text-align:left;background:none;border:0;padding:9px 10px;border-radius:8px;display:flex;gap:10px;align-items:center}
+.search li button:hover,.search li button.on{background:#2a2d34}
+.search small{color:var(--faint);margin-left:auto;font-size:13px;text-align:right}
+main{display:grid;grid-template-columns:minmax(0,1.4fr) minmax(0,1fr);height:calc(100vh - 73px)}
+.fig{position:relative;border-right:1px solid var(--line);overflow:hidden}
+.fig>svg{position:absolute;inset:0;width:100%;height:100%;cursor:grab}
+.fig>svg:active{cursor:grabbing}
+.legend{position:absolute;left:12px;bottom:12px;right:12px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+.legend button{pointer-events:auto;display:flex;align-items:center;gap:7px;background:rgba(22,23,27,.88);border:1px solid var(--line);border-radius:99px;padding:6px 12px;font-size:13px;min-height:36px}
+.key{position:absolute;top:12px;left:14px;display:flex;gap:16px;flex-wrap:wrap;color:var(--faint);font-size:13px;pointer-events:none}
+.key i{display:inline-block;width:22px;height:0;border-top:1.5px solid #8a8a86;vertical-align:middle;margin-right:6px}
+.key i.x{border-top-style:dashed}.key i.d{border-top-style:dotted;border-color:#FC6255}
+.zoombtns{position:absolute;top:10px;right:12px;display:flex;gap:6px}
+.zoombtns button{width:40px;height:40px;border-radius:10px;background:rgba(22,23,27,.88);border:1px solid var(--line);font-size:18px}
+aside{overflow-y:auto;padding:clamp(20px,3vw,40px)}
+.crumbs{display:flex;flex-wrap:wrap;gap:4px 6px;align-items:center;margin-bottom:14px;font-size:14px;color:var(--faint)}
+.crumbs button{background:none;border:0;padding:2px 0;color:var(--mute)}
+.crumbs button:hover{color:var(--ink)}
+.kind{font-size:14px;color:var(--mute);margin:0 0 6px}
+h1,h2,h3{font-family:"Source Serif 4",Georgia,serif;font-weight:600;text-wrap:balance;margin:0}
+h1{font-size:clamp(32px,4vw,44px);line-height:1.05}
+h2{font-size:21px;margin:32px 0 10px}
+.lead{font:400 20px/1.5 "Source Serif 4",Georgia,serif;margin:14px 0 0}
+.sub{color:var(--mute);margin:10px 0 0}
+.note{border:1px dashed var(--line);border-radius:10px;padding:10px 14px;color:var(--mute);font-size:14px;margin-top:16px}
+p{margin:10px 0;max-width:68ch}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin-top:12px}
+.chip{background:var(--bg2);border:1px solid var(--line);border-radius:99px;padding:7px 14px;font-size:14px;min-height:38px;display:inline-flex;align-items:center;gap:8px;text-decoration:none}
+.chip:hover{border-color:#4a4e57}
+.chip small{color:var(--faint);font-size:13px}
+dl{margin:8px 0 0;display:grid;gap:10px}
+dl div{border-left:2px solid var(--c,var(--line));padding-left:14px}
+dt{font-weight:500}
+dd{margin:2px 0 0;color:var(--mute)}
+ol.steps{list-style:none;padding:0;margin:12px 0 0;display:grid;gap:22px}
+ol.steps li{background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;position:relative}
+ol.steps li+li::before{content:"↓";position:absolute;top:-22px;left:0;right:0;text-align:center;color:var(--faint);line-height:22px}
+ol.steps li span{display:block;color:var(--mute);font-size:14px}
+.q{font-style:italic;color:var(--mute)}
+.conn{display:grid;gap:8px;margin-top:10px}
+.conn button{text-align:left;background:var(--bg2);border:1px solid var(--line);border-radius:10px;padding:10px 14px;display:grid;grid-template-columns:auto 1fr;gap:4px 10px;align-items:center}
+.conn button:hover{border-color:#4a4e57}
+.conn em{grid-column:2;font-style:normal;color:var(--mute);font-size:14px}
+blockquote{margin:32px 0 0;padding:18px 20px;border-radius:0 12px 12px 0;background:var(--bg2);font:400 19px/1.5 "Source Serif 4",Georgia,serif}
+.stats{display:flex;gap:28px;flex-wrap:wrap;margin:22px 0 4px}
+.stats b{display:block;font:600 32px/1 "Source Serif 4",serif}
+.stats span{color:var(--mute);font-size:14px}
+.cards{display:grid;gap:10px;margin-top:12px}
+.cards button{text-align:left;background:var(--bg2);border:1px solid var(--line);border-left:3px solid var(--c);border-radius:0 12px 12px 0;padding:14px 16px}
+.cards button:hover{background:#22252b}
+.cards b{font:600 18px "Source Serif 4",serif}
+.cards span{display:block;color:var(--mute);font-size:14px;margin-top:4px}
+.cards small{display:block;color:var(--faint);font-size:13px;margin-top:6px}
+.empty{color:var(--faint);font-size:14px}
+.dot{width:10px;height:10px;border-radius:50%;flex:none;display:inline-block}
+.node{cursor:pointer}
+.node text{pointer-events:none}
+.dim{opacity:.1;transition:opacity .25s}
+.lit{opacity:1;transition:opacity .25s}
+@media(max-width:900px){main{grid-template-columns:1fr;height:auto}.fig{height:64vh;min-height:400px;border-right:0;border-bottom:1px solid var(--line)}aside{overflow:visible}}
+@media(max-width:600px){.brand span{display:none}.search{width:100%;margin-left:0}.key{display:none}.legend{display:none}}
+</style>
+</head>
+<body>
+<header>
+  <button class="brand" id="home" aria-label="Elefant home"><b>Elefant</b><span>a personal atlas of knowledge</span></button>
+  <div class="search">
+    <input id="q" type="search" placeholder="Search a field or concept" autocomplete="off" aria-label="Search">
+    <ul id="res" hidden></ul>
+  </div>
+</header>
+<main>
+  <div class="fig" id="fig">
+    <svg id="svg" role="img" aria-label="Radial atlas of the five branches of knowledge, their fields and the connections between them"></svg>
+    <div class="key"><span><i></i>contains</span><span><i class="x"></i>connects to</span><span><i class="d"></i>draws on</span></div>
+    <div class="zoombtns"><button id="zin" aria-label="Zoom in">+</button><button id="zout" aria-label="Zoom out">−</button><button id="zfit" aria-label="Fit to screen">⤢</button></div>
+    <div class="legend" id="legend"></div>
+  </div>
+  <aside id="panel" aria-live="polite"></aside>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
+<script>
+{
+const yt=n=>'https://www.youtube.com/results?search_query='+encodeURIComponent(n);
+const CH={'3Blue1Brown':'https://www.youtube.com/@3blue1brown','Numberphile':yt('Numberphile'),'Welch Labs':yt('Welch Labs'),'Veritasium':yt('Veritasium'),'Kurzgesagt':yt('Kurzgesagt In a Nutshell'),'Big Think':yt('Big Think'),'Alex O\'Connor':yt('Alex O\'Connor'),'Lex Fridman Podcast':'https://lexfridman.com/podcast/','Closer To Truth':'https://closertotruth.com/','Quanta Magazine':'https://www.quantamagazine.org/','Max Fisher':yt('Max Fisher')};
+const N=(id,name,d,kids,x)=>Object.assign({id,name,d,kids:kids||[]},x||{});
+const L=(arr,pre)=>arr.map(a=>N(pre+a[0],a[1],a[2],[],a[3]?{q:a[3]}:{}));
+
+const MATH={rich:1,sub:'At its deepest level, a language humans developed to understand, describe and predict how the world works.',
+ sec:[{h:'More than calculating',dl:[['Description','Represent reality through numbers, equations and models.'],['Prediction','Estimate what will happen under different conditions.'],['Optimisation','Find the best possible solution given certain constraints.']]},
+  {h:'Example: a chemical plant',steps:[['Physics and chemistry','explain what happens'],['Mathematics','describes it through equations'],['Engineering','applies those equations to design the plant'],['Optimisation','finds the most efficient operating conditions']]},
+  {h:'Is mathematics invented or discovered?',dl:[['Discovered','Mathematical truths exist independently of humans, like physical laws.'],['Invented','Humans created systems, definitions and symbols to describe the world.'],['Middle ground','We invent the language, but discover the relationships and consequences within it.']]},
+  {h:'The deeper idea',p:'Mathematics finds structure in seemingly chaotic situations. The same principles describe the growth of a population, the behaviour of financial markets, the flow of fluids or the training of an AI model.'}],
+ close:'Mathematics is ultimately the science of understanding relationships and finding underlying structure in reality.',next:'Why does mathematics describe the physical world so incredibly well?',watch:['3Blue1Brown','Numberphile','Quanta Magazine']};
+const BIO={rich:1,sub:'How living things work, develop, interact with their environment and evolve. From Greek bios (life) and logos (study).',
+ sec:[{h:'Fundamental principles',dl:[['Cell theory','All living organisms are made of one or more cells.'],['Genetics','Organisms carry genetic information, primarily in DNA.'],['Evolution','Species change over generations.'],['Energy','Living organisms need energy to survive and function.'],['Homeostasis','Organisms regulate internal conditions to stay stable.'],['Interdependence','Organisms interact with each other and their environment.']]},
+  {h:'Why it matters',dl:[['Medicine','Drugs, vaccines and treatments.'],['Pharmaceuticals','Biological medicines such as antibodies and insulin.'],['Agriculture','Crops and food production.'],['Climate','Ecosystems, biodiversity and carbon cycles.'],['Biotechnology','Living organisms that manufacture useful products.']]},
+  {h:'Biology + chemical engineering',p:'Biochemical engineering. Companies such as Lonza use biological systems, like mammalian cells, inside industrial bioreactors to manufacture medicines. Biology explains how living systems work; biochemical engineering explains how to control and scale them.'}],
+ close:'Biology covers everything from microscopic cells to entire ecosystems.',watch:['Kurzgesagt','Veritasium','Quanta Magazine']};
+const NEURO={rich:1,sub:'How it works, develops and shapes our thoughts, emotions, behaviour and perception.',note:'Not in the original taxonomy. Placed here as a life science and linked to psychology and cognitive science, where it overlaps.',
+ sec:[{h:'The building blocks',p:'The neuron is the basic functional unit. Neurons communicate through electrical signals and chemical messengers called neurotransmitters, forming networks that let us think, remember, feel and act.',dl:[['Dopamine','Motivation, reward, learning and movement.'],['Serotonin','Mood regulation, sleep and other functions.'],['GABA','The main inhibitory neurotransmitter.'],['Glutamate','The main excitatory neurotransmitter, key for learning and memory.'],['Acetylcholine','Attention, learning and muscle activation.']]},
+  {h:'The biggest questions',dl:[['Consciousness','How does the brain generate subjective experience?'],['Memory','How do we store and retrieve information?'],['Learning','How does the brain physically change when we learn?'],['Emotions','Why do we feel love, fear, happiness or anxiety?'],['Decision-making','How do we decide, and how rational are we?'],['Intelligence','What determines cognitive abilities?'],['Neuroplasticity','Can we keep rewiring our brains throughout life?'],['Sleep','Why do we need it, and what happens while we sleep?']]},
+  {h:'Where it is applied',dl:[['Medicine','Alzheimer\'s, Parkinson\'s, epilepsy and brain injuries.'],['Psychology','Behaviour, emotions, habits and mental processes.'],['Education','Better learning and memory.'],['Technology','Artificial intelligence and brain-computer interfaces.'],['Business','Decision-making, incentives and consumer behaviour.']]}],
+ close:'How does the physical activity of our brain produce the experience of being human?',watch:['Big Think','Lex Fridman Podcast','Closer To Truth','Kurzgesagt']};
+const GEO={rich:1,sub:'Where things happen, why they happen there, and how places and people influence one another. Geography as a whole spans two branches: physical geography belongs to the Earth sciences, human geography to the social sciences.',
+ sec:[{h:'Why geography matters',dl:[['Economics','Why are some countries rich in resources or industrial capacity?'],['Politics','Why does location shape wars, alliances and power?'],['Climate','Why are some regions more vulnerable to droughts, floods or heat?'],['Demographics','Why are populations growing in some regions and shrinking in others?'],['Business','Why do companies put factories, supply chains and headquarters where they do?']]},
+  {h:'My perspective',p:'Geography gives the spatial context that economics, history, politics and science sometimes lack. Why Switzerland became a financial and pharmaceutical hub, why China\'s industry concentrated along its coast, why energy security matters so much to Europe: all require geographical thinking.'}],
+ close:'Geography is one of the most useful disciplines for understanding the modern world.',watch:['Max Fisher','Kurzgesagt']};
+const PHIL={rich:1,sub:'Literally "the love of wisdom" (philo + sophia). Not accumulating knowledge, but questioning what we know and why we believe it.',
+ sec:[{h:'Influential thinkers',dl:[['Socrates (470–399 BC)','Question everything; the Socratic method.'],['Plato (427–347 BC)','Ideal forms, justice, knowledge and reality.'],['Aristotle (384–322 BC)','Logic, biology, politics, ethics and scientific reasoning.'],['Immanuel Kant (1724–1804)','Reason, knowledge, morality and autonomy.'],['Friedrich Nietzsche (1844–1900)','Challenged traditional morality, religion and values.'],['Hannah Arendt (1906–1975)','Totalitarianism, power, freedom and responsibility.']]},
+  {h:'Two more branches worth knowing',dl:[['Logic','How should we think? Here it sits in the formal sciences, with philosophical logic as its bridge back to philosophy.'],['Political philosophy','How should society work? Power, justice, freedom and equality. Linked here to political science and ethics.']]},
+  {h:'A path to follow',steps:[['Ancient philosophy','Socrates, Plato, Aristotle'],['Enlightenment','Descartes, Locke, Kant'],['Existentialism','Nietzsche, Kierkegaard, Sartre, Camus'],['Modern philosophy','Arendt, Popper, Rawls'],['Contemporary questions','AI, consciousness, ethics, technology, human nature']]},
+  {h:'Books to start',dl:[['The Story of Philosophy','Will Durant'],['Sophie\'s World','Jostein Gaarder'],['Meditations','Marcus Aurelius'],['The Myth of Sisyphus','Albert Camus']]}],
+ close:'Science asks how the world works. History asks how we got here. Philosophy asks what it means to know, exist, think and live a good life.',watch:['Alex O\'Connor','Closer To Truth','Big Think']};
+const HIST={rich:1,sub:'How people, societies and nations developed, why events happened and how they shaped today. Cause and effect, power, economics, culture and social change, more than dates and wars.',
+ sec:[{h:'The main periods',steps:[['Ancient history','c. 3500 BC – 500 AD · writing, early empires, democracy, major religions'],['Middle Ages','c. 500 – 1500 · feudalism, expansion of Islam, the Church, the Mongol Empire'],['Early modern period','c. 1500 – 1800 · Renaissance, scientific revolution, colonialism, Enlightenment'],['Modern history','c. 1800 – 1945 · industrial revolution, nationalism, imperialism, two world wars'],['Contemporary history','1945 – present · Cold War, European integration, globalisation, rise of China']],p:'Dates are approximate and vary between historical traditions.'},
+  {h:'Three fundamental questions',dl:[['How did we get here?','The origins of today\'s political, economic and social systems.'],['Why does the world work this way?','The roots of inequality, competition, institutions and cultural differences.'],['What might happen next?','Patterns, similarities and the limits of historical comparison.']],p:'Example: the industrial revolution explains why Britain became a global power, why modern capitalism developed and why cities expanded.'},
+  {h:'A method for every event',p:'What happened? Why did it happen? Who benefited and who lost? What consequences did it have?'}],
+ close:'History is not simply about understanding the past. It is a tool for understanding the present and making better judgements about the future.',watch:['Max Fisher','Big Think']};
+const ART={rich:1,sub:'It communicates what ordinary language struggles with: beauty, suffering, love, identity, power and meaning. Defining it is surprisingly hard.',
+ sec:[{h:'Forms of art',dl:[['Visual arts','Painting, drawing, sculpture, photography, installations. Michelangelo and the Sistine Chapel.'],['Applied and spatial arts','Architecture, industrial design, fashion, ceramics, graphic design. Frank Gehry.'],['Performing and literary arts','Theatre, dance, opera, poetry and the novel; each has its own place in this atlas.']]},
+  {h:'Dimensions of art',dl:[['Expression','Emotions, thoughts and personal experience.'],['Aesthetics','Beauty, harmony, proportion and form.'],['Communication','Stories, values and cultural meanings.'],['Representation','Interpreting reality, nature and society.'],['Provocation','Challenging assumptions and conventions.'],['Creation','Bringing something new into existence.']],p:'Art need not be beautiful, pleasant or even understandable; sometimes its purpose is to disturb.'},
+  {h:'How art evolved',steps:[['Prehistoric','cave paintings; ritual and representation of nature'],['Ancient','Egypt, Greece, Rome; mythology, power, ideal proportion'],['Renaissance (14th–16th c.)','humanism, perspective, rediscovery of antiquity'],['Baroque (17th–18th c.)','drama, movement, theatricality'],['Impressionism (19th c.)','light, colour, subjective perception'],['Modernism','cubism, surrealism, expressionism, abstraction'],['Contemporary','conceptual art, pop art, digital media']]},
+  {h:'The philosophy of art',dl:[['Plato','Art as imitation (mimesis) of reality.'],['Aristotle','Representation and catharsis.'],['Kant','Aesthetic judgement, beauty and the sublime.'],['Nietzsche','Art as affirmation of life against suffering.'],['Walter Benjamin','Art, technology and mechanical reproduction.'],['Arthur Danto','What separates an artwork from an ordinary object?']],p:'Duchamp\'s Fountain (1917), a urinal presented as art, fundamentally challenged what art is.'},
+  {h:'Where to start',p:'Renaissance, Impressionism and Modernism give a strong foundation for how Western art evolved. Study it through history, aesthetics, philosophy, appreciation and its relation to society.'}],
+ close:'One of art\'s greatest contributions is that it teaches us to see the world differently.',watch:[]};
+const MUS={rich:1,sub:'One of humanity\'s oldest forms of expression: to tell stories, celebrate, mourn, express identity and accompany rituals.',
+ sec:[{h:'Main genres',dl:[['Classical','Bach, Mozart, Beethoven. Complex compositions and orchestral structures.'],['Jazz','Improvisation, sophisticated harmony, rhythmic experimentation.'],['Rock','Electric guitars, drums, expressive performance.'],['Electronic','Synthesizers, digital production, electronic rhythms.'],['Soul and R&B','Emotional vocals, groove, gospel and blues roots.'],['Traditional and folk','Cultural heritage and regional identities.']]},
+  {h:'Through history',steps:[['Middle Ages','Gregorian chant, early notation'],['Renaissance','Polyphony'],['Baroque (1600–1750)','Bach, Vivaldi'],['Classical (1750–1820)','Mozart, Haydn, Beethoven'],['Romantic (1800s)','Emotional expression, larger orchestras, nationalism'],['20th century','Jazz, blues, rock, pop, experimental'],['21st century','Digital production, streaming, global influences, AI']]},
+  {h:'Five musicians worth knowing',dl:[['J. S. Bach','Baroque · mathematical precision and complexity'],['Beethoven','Classical and Romantic · drama and intensity'],['Miles Davis','Jazz · improvisation and experimentation'],['David Bowie','Rock and pop · reinvention and identity'],['Nina Simone','Jazz, soul and blues · expression and civil rights']]},
+  {h:'Why it is so powerful',p:'Music combines mathematical structures (frequencies, intervals, ratios) with deeply human experiences (emotion, memory, identity). It is a science, an art and a cultural phenomenon at once.'},
+  {h:'An exercise',p:'Listen to Beethoven\'s Symphony No. 5, then Miles Davis\'s So What. How do melody, rhythm, harmony and emotion differ?'}],
+ close:'The goal is not to listen to more music, but to understand what you are listening to.',watch:[]};
+const BUS={rich:1,sub:'Identifying opportunities, solving problems, organising resources, taking risks and generating economic value. Much broader than simply making money.',
+ sec:[{h:'The five fundamental elements',dl:[['Opportunity','An unmet need, market inefficiency or problem that can be solved profitably.'],['Value creation','A product or service that solves a problem or improves someone\'s situation.'],['Operations','Organising people, technology, capital, suppliers and processes to deliver that value.'],['Value capture','Selling and generating revenue, ideally exceeding the cost of delivering it.'],['Growth and sustainability','Reinvesting, innovating, expanding and keeping a competitive advantage over time.']]},
+  {h:'How a business works economically',steps:[['Capital and resources','money, people, technology, materials'],['Business activities','production, operations, marketing, sales'],['Products and services','value delivered to customers'],['Revenue and profit','money received minus costs incurred'],['Reinvestment and growth','']]},
+  {h:'The actors around a business',dl:[['Customers','People or organisations willing to pay for something.'],['Employees','Knowledge, skills and labour.'],['Suppliers','Raw materials, equipment and services.'],['Investors','Capital.'],['Governments','Regulation, taxation and economic frameworks.'],['Competitors','Other businesses satisfying similar needs.']]},
+  {h:'Core functions',dl:[['Strategy','Where to compete and how to win'],['Finance','Capital, cash flow and profitability'],['Operations','Producing goods and delivering services'],['Marketing','Understanding customers and creating demand'],['Sales','Converting demand into revenue'],['Human resources','Recruiting and developing people'],['R&D','New products and technologies'],['Supply chain','Suppliers, procurement and logistics']]},
+  {h:'Types of business',dl:[['Industrial','Physical products, from chemicals and pharmaceuticals to machinery. BASF, Lonza.'],['Technology','Software, platforms and hardware. Microsoft, SAP.'],['Financial','Banking, insurance, investment and lending. UBS, BlackRock.'],['Professional services','Expertise and specialised services. McKinsey, Deloitte.'],['Consumer and retail','Products sold directly to consumers. Inditex, Amazon.']]},
+  {h:'Is a business successful?',dl:[['Revenue','How much money the company generates'],['Gross profit','Revenue minus direct production costs'],['EBITDA','Operating earnings before certain accounting and financing costs'],['Net profit','What remains after all expenses and taxes'],['Cash flow','How much cash the business generates'],['ROI and ROIC','Return relative to investment, and how efficiently invested capital is used'],['Market share','Position relative to competitors']],p:'A company can generate billions in revenue and still be unprofitable; a smaller one can generate excellent returns on capital.'},
+  {h:'Business versus engineering',dl:[['The engineer asks','How do we increase capacity, improve efficiency, reduce operating costs, ensure quality?'],['The manager asks','Is a €100 million plant worthwhile? Is there demand? What is the return? Make or outsource? Where to build next?']],p:'Engineering determines what is technically possible; business determines what is economically attractive and strategically desirable. Some of the most valuable professionals connect both.'},
+  {h:'My focus',p:'Understand a company as an integrated economic system, not a collection of management buzzwords. Emphasis on corporate finance, strategy, accounting and industrial economics.'}],
+ close:'How do we allocate scarce resources to create the greatest sustainable economic value?',watch:['Big Think']};
+
+const TREE=N('knowledge','Knowledge','Everything Elefant maps, organised in the traditional division of the sciences and humanities, plus the applied fields that combine them.',[
+ N('formal','Formal sciences','Abstract systems defined by rules and symbols. Their truths are established by proof, not by observation.',[
+  N('logic','Logic','The study of valid inference: what follows from what, and why.',[
+   N('logic-formal','Formal and mathematical logic','Propositional and predicate logic, proof theory, model theory and set theory: the foundations of mathematics.'),
+   N('logic-phil','Philosophical logic','Logic applied to philosophical problems: truth, meaning, reference, paradoxes and non-classical logics.'),
+   N('logic-modal','Modal and computational logic','Logics of necessity, possibility, time and knowledge, and logic as the basis of computation, verification and programming languages.')]),
+  N('mathematics','Mathematics','The study of patterns, structures, relationships, quantities and change.',[
+   N('math-pure','Pure mathematics','Mathematics studied for its own internal structure, independent of any application.',L([
+    ['algebra','Algebra','Relationships between quantities using symbols, equations and variables.','If production costs depend on output, how do we model that relationship?'],
+    ['geometry','Geometry','Shapes, dimensions, distances, angles and space.','How do we calculate the volume of a chemical reactor?'],
+    ['calculus','Calculus','Continuous change, rates of change and accumulation.','How does temperature change inside a reactor over time?'],
+    ['number-theory','Number theory','Numbers, operations, prime numbers, divisibility and properties of integers.','Why are prime numbers the building blocks of integers?']],'math-')),
+   N('math-applied','Applied mathematics','Mathematical methods built to model and solve problems in science, engineering and society.',L([
+    ['probability','Probability','The mathematics of uncertainty and randomness.','What is the probability that a manufacturing process produces defective products?'],
+    ['statistics','Statistics','Learning from data: estimation, inference and testing hypotheses.','How do we know whether a process change really improved yield?'],
+    ['optimization','Optimization','Finding the best solution under constraints.','Which operating conditions maximise a plant\'s output at minimum cost?']],'math-'))],MATH),
+  N('tcs','Theoretical computer science','The mathematical study of computation: what can be computed, how efficiently, and how information is represented.',[
+   N('tcs-algorithms','Algorithms and data structures','Step-by-step procedures for solving problems, and the ways of organising the data they work on.',[],{q:'How can we optimise a supply chain or design an efficient algorithm?'}),
+   N('tcs-computability','Computability and complexity theory','Which problems any algorithm can solve at all, and which it can solve efficiently (the P versus NP question).'),
+   N('tcs-information','Information theory','Measuring information and uncertainty (entropy), and the limits of compression and communication. Founded by Claude Shannon.')],{watch:['Welch Labs']})]),
+ N('natural','Natural sciences','The empirical study of the physical universe, through observation, experiment and testable theories.',[
+  N('physical','Physical sciences','The sciences of non-living matter and energy, from particles to planets.',[
+   N('physics','Physics','Matter, energy, space and time, and the fundamental laws that govern them.',L([
+    ['mechanics','Mechanics','Motion and forces, from Newton\'s laws to fluids and continua.'],
+    ['thermo','Thermodynamics','Energy, heat, work and entropy: why some processes happen and others do not.','Why can no engine turn all of its heat into work?'],
+    ['quantum','Quantum mechanics','The physics of the very small, where energy comes in discrete amounts and outcomes are probabilistic.'],
+    ['relativity','Relativity','Einstein\'s theories of space, time and gravity at high speeds and large scales.']],'phys-'),{watch:['Veritasium','Quanta Magazine']}),
+   N('chemistry','Chemistry','Substances, their composition and properties, and the reactions that transform them.',L([
+    ['organic','Organic chemistry','Carbon-based compounds: the chemistry of fuels, plastics, drugs and life.'],
+    ['inorganic','Inorganic chemistry','Metals, minerals, salts and catalysts: the chemistry of the other elements.'],
+    ['physical','Physical chemistry','Chemistry explained with physics: kinetics, chemical thermodynamics, quantum chemistry and spectroscopy.'],
+    ['biochem','Biochemistry','The chemical processes inside living organisms: proteins, enzymes and metabolism.']],'chem-')),
+   N('astronomy','Astronomy and astrophysics','Stars, planets and galaxies, and the origin and evolution of the universe.',[],{watch:['Kurzgesagt']}),
+   N('earth','Earth sciences','The physical Earth: its rocks, atmosphere and oceans. Physical geography belongs here.',L([
+    ['geology','Geology','The solid Earth: rocks, minerals, plate tectonics and Earth\'s history.'],
+    ['meteorology','Meteorology','The atmosphere, weather and climate.'],
+    ['oceanography','Oceanography','The oceans: currents, chemistry, sea floor and marine life.']],'earth-'))]),
+  N('life','Life sciences (biology)','The science that studies life and living organisms.',[
+   N('life-molcell','Molecular and cellular biology','Cells, the basic units of life, and the molecules and chemical processes inside them.'),
+   N('life-genevo','Genetics and evolutionary biology','DNA, genes and inheritance, and how life changes over generations.'),
+   N('life-ecozoo','Ecology and zoology','Animals, and the relationships between organisms and their environment.'),
+   N('life-botmicro','Botany and microbiology','Plants, and bacteria, viruses and other microorganisms.'),
+   N('neuroscience','Neuroscience','The scientific study of the nervous system, particularly the brain.',L([
+    ['neurobiology','Neurobiology','How neurons and the brain function.'],['cognitive','Cognitive neuroscience','Thinking, memory, attention and learning.'],
+    ['behavioural','Behavioural neuroscience','How the brain influences behaviour.'],['affective','Affective neuroscience','Emotions, motivation and feelings.'],
+    ['computational','Computational neuroscience','Mathematical models of brain activity.'],['clinical','Clinical neuroscience','Neurological and psychiatric disorders.'],
+    ['developmental','Developmental neuroscience','How the nervous system develops and changes.']],'neuro-'),NEURO)],BIO)]),
+ N('social','Social sciences','The empirical study of human behaviour, societies and the institutions people build.',[
+  N('mind','Individual and mind','The individual: how people perceive, think, feel and act.',[
+   N('psychology','Psychology','The scientific study of mind and behaviour.',L([
+    ['cognitive','Cognitive psychology','Perception, memory, attention, language and reasoning.'],['clinical','Clinical psychology','Understanding, assessing and treating mental disorders.'],
+    ['developmental','Developmental psychology','How people change across the lifespan.'],['social','Social psychology','How other people shape our thoughts, feelings and behaviour.']],'psy-')),
+   N('cogsci','Cognitive science','The mind as information processing, studied jointly by psychology, neuroscience, linguistics, philosophy and artificial intelligence.',[],{watch:['Lex Fridman Podcast']})]),
+  N('society','Society and culture','Groups, cultures and the spaces they inhabit.',[
+   N('sociology','Sociology','Social relationships, groups, institutions and social change.'),
+   N('anthropology','Anthropology','Humans across time and cultures.',L([
+    ['cultural','Cultural anthropology','Beliefs, customs and ways of life across societies.'],['biological','Biological anthropology','Human evolution, variation and our primate relatives.'],
+    ['archaeology','Archaeology','The human past reconstructed from material remains.']],'anth-')),
+   N('human-geo','Human geography','The scientific study of the Earth, its physical features, environments, people, and the relationships between humans and the places they inhabit.',L([
+    ['economic','Economic geography','Where economic activities take place and why.'],['political','Political geography','Countries, borders, territories and power.'],
+    ['urban','Urban geography','Cities, infrastructure and urban development.'],['population','Population geography','Population growth, distribution and migration.'],
+    ['environmental','Environmental geography','Relationships between humans and nature.'],['geopolitics','Geopolitics','How geography shapes international relations and power.']],'geo-'),GEO)]),
+  N('institutions','Institutions and systems','The large systems societies use to allocate resources, power and rules.',[
+   N('economics','Economics','How societies allocate scarce resources among competing uses.',L([
+    ['micro','Microeconomics','Decisions of households and firms, prices and markets.'],['macro','Macroeconomics','The economy as a whole: growth, inflation, unemployment, money and policy.'],
+    ['econometrics','Econometrics','Statistical methods for testing economic theories with data.']],'econ-')),
+   N('polsci','Political science and international relations','Power, government and political behaviour, and the relations between states.',[],{watch:['Max Fisher']}),
+   N('law','Law and jurisprudence','Legal systems, and the theory of what law is and why it binds.'),
+   N('linguistics','Linguistics','The scientific study of language: sounds, structure, meaning and use. Often counted in the humanities too.')])]),
+ N('humanities','Humanities','Human culture, meaning and expression, studied mainly through interpretation and critical analysis.',[
+  N('philosophy','Philosophy','The study of fundamental questions about existence, knowledge, reality, morality, reason and human life.',[
+   N('phil-epistemology','Epistemology','The theory of knowledge: truth, belief, justification and how we come to know.',[],{q:'How do we know something is true? Can we trust our senses?'}),
+   N('phil-metaphysics','Metaphysics and ontology','What is reality? Existence, consciousness, time, free will and the universe.',[],{q:'Do we have free will? What is consciousness?'}),
+   N('phil-ethics','Ethics and moral philosophy','What is right and wrong? Morality, values and responsibility.',[],{q:'What makes an action good? Is lying ever justified?'}),
+   N('phil-aesthetics','Aesthetics','What is beauty? Art, taste and artistic expression.',[],{q:'What makes something beautiful? What is art?'})],PHIL),
+  N('history','History and memory','The study of the human past.',[
+   N('hist-world','World and regional history','The human past across periods and regions, seen through several lenses.',L([
+    ['political','Political history','Governments, empires, wars, revolutions and political systems.'],['economic','Economic history','Trade, industrialisation, capitalism, crises and wealth distribution.'],
+    ['social','Social history','How ordinary people lived, worked, married and organised societies.'],['cultural','Cultural history','Religion, philosophy, art, science and education.'],
+    ['military','Military history','Conflicts, strategies, weapons and geopolitical competition.'],['technological','Technological history','How inventions and discoveries transformed humanity.'],
+    ['demographic','Demographic history','Population growth, migration, urbanisation and demographic transitions.']],'hist-')),
+   N('hist-historiography','Historiography','The history of history: sources, methods and how interpretations of the past change.'),
+   N('hist-art','Art history','Art and visual culture studied in their historical context.')],HIST),
+  N('arts','Language, literature and arts','Human expression through words, images, sound and belief.',[
+   N('literature','Literature and comparative studies','Poetry, novels, drama and essays, and their comparison across languages and cultures.'),
+   N('visual-arts','Visual arts and architecture','The human expression of ideas, emotions, experiences and interpretations of the world through creative forms.',[],ART),
+   N('music','Music and performing arts','The art of organising sound and silence through time to create an expressive, emotional, aesthetic or intellectual experience.',L([
+    ['melody','Melody','A sequence of notes forming a recognisable musical idea; the part you hum.'],['harmony','Harmony','Different notes sounding together, creating depth, tension and colour.'],
+    ['rhythm','Rhythm','The organisation of sound and silence in time: pulse, tempo, movement.'],['dynamics','Dynamics','Variations in loudness and intensity.'],
+    ['timbre','Timbre','The colour of a sound; why a piano and a violin differ on the same note.']],'mus-'),MUS),
+   N('religion','Religious studies and theology','Religions as human phenomena (religious studies), and the study of the divine from within a tradition (theology).')])]),
+ N('applied','Applied sciences','Fields that combine knowledge from the other branches to solve practical problems.',[
+  N('engineering','Engineering and technology','Designing and building systems, from machines and plants to software, with mathematics and the physical sciences.',[],{draws:['mathematics','physics','chemistry']}),
+  N('medicine','Medicine and health sciences','Understanding, preventing and treating disease.',[],{draws:['life','chemistry','psychology']}),
+  N('business','Business and management','The activity of creating, delivering and capturing value by providing products or services that people or organisations need and are willing to pay for.',L([
+   ['strategy','Strategy','Competitive advantage, positioning, business models, growth.'],['finance','Finance and accounting','Financial statements, valuation, investment, profitability.'],
+   ['management','Management','Leadership, organisations, people and decision-making.'],['marketing','Marketing and sales','Customers, markets, branding, pricing and commercial execution.'],
+   ['entrepreneurship','Entrepreneurship','Innovation, startups, venture capital and business development.']],'bus-'),Object.assign({draws:['economics','psychology','mathematics']},BUS)),
+  N('education','Education','How people learn, and how to teach them well.',[],{draws:['psychology','sociology','philosophy']})])
+]);
+
+const X=[
+ ['mathematics','economics','Economics runs on mathematical models.'],['math-probability','bus-finance','Risk, valuation and investment under uncertainty.'],
+ ['math-statistics','life','Population modelling, statistics and bioinformatics.'],['math-statistics','econ-econometrics','Econometrics is statistics applied to economic data.'],
+ ['mathematics','phil-metaphysics','What is mathematical truth? Invented or discovered?'],['logic-phil','philosophy','Philosophical logic is the bridge between logic and philosophy.'],
+ ['logic-formal','tcs-computability','Gödel and Turing: the limits of proof and of computation.'],['math-optimization','tcs-algorithms','Optimisation problems solved by algorithms.'],
+ ['tcs-information','phys-thermo','Entropy appears in both: information and heat.'],['mathematics','music','Frequencies, intervals, patterns and ratios.'],
+ ['mathematics','neuro-computational','Mathematical models of brain activity.'],['chem-biochem','life-molcell','The chemistry of the cell.'],
+ ['neuroscience','psychology','Brain and behaviour studied from two levels.'],['neuroscience','cogsci','Neuroscience is one of the pillars of cognitive science.'],
+ ['neuroscience','phil-metaphysics','Consciousness, identity and free will.'],['neuroscience','music','Music engages memory, movement and reward networks.'],
+ ['linguistics','cogsci','Language as a window into the mind.'],['linguistics','literature','The structure of language and its artistic use.'],
+ ['human-geo','earth','Physical geography is part of the Earth sciences.'],['life-ecozoo','geo-environmental','Ecosystems, biodiversity and human impact on nature.'],
+ ['life','phil-metaphysics','What defines life?'],['anth-biological','life-genevo','Human evolution.'],['anth-archaeology','history','Reconstructing the past from material remains.'],
+ ['business','geo-economic','Where companies locate factories, supply chains and headquarters.'],['economics','hist-economic','Origins of capitalism, financial crises and inequality.'],
+ ['bus-management','neuroscience','Decision-making, incentives and consumer behaviour.'],['economics','phil-ethics','What is a fair distribution of wealth?'],
+ ['business','music','Music as a global industry: labels, streaming, concerts and rights.'],['history','human-geo','How places change over time; borders and resources.'],
+ ['hist-demographic','geo-population','Population growth, migration and urbanisation.'],['hist-political','geo-geopolitics','Formation of states and geopolitical competition.'],
+ ['polsci','geo-geopolitics','International relations shaped by geography.'],['polsci','phil-ethics','Political philosophy: justice, freedom and legitimacy.'],
+ ['law','phil-ethics','What makes a law just?'],['hist-historiography','phil-epistemology','How can we know the past?'],['religion','phil-metaphysics','God, existence and the meaning of life.'],
+ ['hist-art','visual-arts','Art read in its historical context.'],['hist-cultural','music','Music evolved alongside civilisations.'],
+ ['phil-aesthetics','visual-arts','What is beauty, and what makes something art?'],['phil-aesthetics','music','Beauty and meaning in sound.'],['visual-arts','music','Two of the arts, sharing a history and an aesthetics.'],
+ ['engineering','bus-finance','Techno-economic analysis: where engineering meets finance.'],['engineering','life','Biochemical engineering: scaling living systems in bioreactors.']
+];
+
+const BR={formal:'#58C4DD',natural:'#83C167',social:'#E1A158',humanities:'#9A72AC',applied:'#FC6255'};
+const KIND=['Atlas','Branch of knowledge','Field','Discipline','Subdiscipline','Topic'];
+const R=[0,230,370,490,600,700];
+const root=d3.hierarchy(TREE,d=>d.kids);
+const all=root.descendants(),byId={};
+all.forEach(h=>{byId[h.data.id]=h;h.c=h.depth===0?'#ecebe6':BR[h.ancestors().slice(-2)[0].data.id]});
+TREE.kids.forEach(k=>k.kids.forEach(f=>(f.draws||[]).forEach(t=>X.push([f.id,t,'Draws on '+byId[t].data.name+'.','d']))));
+X.forEach(x=>{if(!byId[x[0]]||!byId[x[1]])console.warn('missing',x)});
+const XX=X.filter(x=>byId[x[0]]&&byId[x[1]]);
+d3.tree().size([2*Math.PI,1]).separation((a,b)=>(a.parent===b.parent?1:1.6)/Math.max(1,a.depth))(root);
+const nodes=all.map(h=>{const r=R[h.depth],a=h.x-Math.PI/2;h.tx=Math.cos(a)*r;h.ty=Math.sin(a)*r;h.x0=h.x;return h});
+nodes.forEach(h=>{h.x=h.tx;h.y=h.ty});
+const tl=root.links().map(l=>({source:l.source,target:l.target}));
+const xl=XX.map(x=>({source:byId[x[0]],target:byId[x[1]],why:x[2],k:x[3]||'x'}));
+const nb=new Map(nodes.map(h=>[h,new Set([h])]));
+tl.concat(xl).forEach(l=>{nb.get(l.source).add(l.target);nb.get(l.target).add(l.source)});
+const crossOf=h=>xl.filter(l=>l.source===h||l.target===h).map(l=>({o:l.source===h?l.target:l.source,why:l.k==='d'&&l.target===h?'Used by '+l.source.data.name+'.':l.why,k:l.k}));
+
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const go=id=>{if(id)location.hash=id;else{history.replaceState(null,'',location.pathname+location.search);render('')}};
+const path=h=>h.ancestors().reverse().slice(1,-1).map(a=>a.data.name).join(' · ');
+const connBtn=(o,why)=>`<button data-go="${o.data.id}"><span class="dot" style="background:${o.c}"></span><span>${esc(o.data.name)} <span style="color:var(--faint)">${esc(path(o)?'· '+path(o).split(' · ').slice(-1)[0]:'')}</span></span><em>${esc(why)}</em></button>`;
+const secHtml=(s,c)=>`<h2>${esc(s.h)}</h2>`+(s.steps?`<ol class="steps">${s.steps.map(t=>`<li><b>${esc(t[0])}</b>${t[1]?`<span>${esc(t[1])}</span>`:''}</li>`).join('')}</ol>`:'')
+ +(s.dl?`<dl style="--c:${c}">${s.dl.map(t=>`<div><dt>${esc(t[0])}</dt><dd>${esc(t[1])}</dd></div>`).join('')}</dl>`:'')+(s.p?`<p>${esc(s.p)}</p>`:'');
+const count=h=>h.descendants().length-1;
+const richIn=h=>h.descendants().filter(d=>d.data.rich).length;
+
+const panel=document.getElementById('panel');
+function render(id){
+ const h=byId[id];
+ if(!h||h.depth===0){
+  panel.innerHTML=`<h1>Elefant</h1><p class="lead">A personal atlas of knowledge, organised from the essentials outward.</p>
+  <p class="sub">The centre is knowledge as a whole. Five branches radiate from it, following the traditional division of the sciences and humanities, with the applied fields that combine them. Dashed threads mark the connections between distant fields, where many of the most interesting ideas live.</p>
+  <div class="stats"><div><b>5</b><span>branches</span></div><div><b>${nodes.length-6}</b><span>fields and disciplines</span></div><div><b>${XX.length}</b><span>connections</span></div><div><b>${nodes.filter(n=>n.data.rich).length}</b><span>notes written</span></div></div>
+  <h2>The five branches</h2><div class="cards">${root.children.map(b=>`<button data-go="${b.data.id}" style="--c:${b.c}"><b>${esc(b.data.name)}</b><span>${esc(b.data.d)}</span><small>${count(b)} nodes · ${richIn(b)} with notes</small></button>`).join('')}</div>
+  <p class="empty" style="margin-top:24px">Introductory level · version 0.2 · November 2026</p>`;
+ } else {
+  const d=h.data,c=h.c,anc=h.ancestors().reverse().slice(0,-1);const cx=crossOf(h);
+  const draws=cx.filter(o=>o.k==='d'&&xl.some(l=>l.source===h&&l.target===o.o));const rest=cx.filter(o=>!draws.includes(o));
+  panel.innerHTML=`<nav class="crumbs">${anc.map(a=>`<button data-go="${a.depth?a.data.id:''}">${esc(a.depth?a.data.name:'Elefant')}</button>`).join('<span>/</span>')}</nav>
+  <p class="kind">${KIND[h.depth]}</p><h1 style="color:${c}">${esc(d.name)}</h1>
+  <p class="lead">${esc(d.d)}</p>${d.sub?`<p class="sub">${esc(d.sub)}</p>`:''}${d.note?`<p class="note">${esc(d.note)}</p>`:''}
+  ${draws.length?`<h2>Draws on</h2><div class="chips">${draws.map(o=>`<button class="chip" data-go="${o.o.data.id}"><span class="dot" style="background:${o.o.c}"></span>${esc(o.o.data.name)}</button>`).join('')}</div>`:''}
+  ${d.q?`<h2>Guiding question</h2><p class="q">${esc(d.q)}</p>`:''}
+  ${h.children?`<h2>Contains</h2><div class="chips">${h.children.map(k=>`<button class="chip" data-go="${k.data.id}"><span class="dot" style="background:${c}"></span>${esc(k.data.name)}${k.children?`<small>${k.children.length}</small>`:''}</button>`).join('')}</div>`:''}
+  ${(d.sec||[]).map(s=>secHtml(s,c)).join('')}
+  ${rest.length?`<h2>Connections</h2><div class="conn">${rest.map(o=>connBtn(o.o,o.why)).join('')}</div>`:''}
+  ${d.watch&&d.watch.length?`<h2>Watch</h2><div class="chips">${d.watch.map(n=>`<a class="chip" href="${CH[n]}" target="_blank" rel="noopener">▶ ${esc(n)}</a>`).join('')}</div>`:d.rich?`<h2>Watch</h2><p class="empty">No channels linked yet.</p>`:''}
+  ${d.close?`<blockquote style="border-left:3px solid ${c}">${esc(d.close)}</blockquote>`:''}
+  ${d.next?`<p class="sub" style="margin-top:18px">Next to explore: <span class="q">${esc(d.next)}</span></p>`:''}
+  ${d.rich?'':`<p class="note">Seed note. Grow it with a definition in your own words, an example from engineering, its prerequisites, and the exact minute of the video that explains it best.</p>`}`;
+ }
+ panel.scrollTop=0;highlight(h&&h.depth?h:null);
+}
+document.addEventListener('click',e=>{const b=e.target.closest('[data-go]');if(b){e.preventDefault();go(b.dataset.go)}});
+document.getElementById('home').onclick=()=>go('');
+document.getElementById('legend').innerHTML=root.children.map(b=>`<button data-go="${b.data.id}"><span class="dot" style="background:${b.c}"></span>${esc(b.data.name)}</button>`).join('');
+
+const svg=d3.select('#svg'),fig=document.getElementById('fig');
+const g=svg.append('g');
+const rings=g.append('g').selectAll('circle').data(R.slice(1)).join('circle').attr('r',r=>r).attr('fill','none').attr('stroke','#23252b').attr('stroke-dasharray','2 6');
+const tLines=g.append('g').selectAll('line').data(tl).join('line').attr('stroke',l=>l.target.c).attr('stroke-opacity',l=>l.source.depth===0?.35:.5).attr('stroke-width',l=>Math.max(.7,2.4-l.source.depth*.5));
+const xPaths=g.append('g').attr('fill','none').selectAll('path').data(xl).join('path')
+ .attr('stroke',l=>l.k==='d'?BR.applied:'#9a9994').attr('stroke-opacity',l=>l.k==='d'?.55:.32).attr('stroke-width',1)
+ .attr('stroke-dasharray',l=>l.k==='d'?'1.5 4':'4 5');
+const SZ=[16,22,12,7.5,5,4],FS=[14,19,15,13,13,13];
+const nd=g.append('g').selectAll('g').data(nodes).join('g').attr('class','node').on('click',(e,h)=>{e.stopPropagation();go(h.data.id)});
+nd.append('circle').attr('r',h=>SZ[h.depth]).attr('fill',h=>h.depth<=1?h.c+(h.depth?'30':'14'):h.c).attr('fill-opacity',h=>h.depth>1?(h.data.rich?1:.75):1)
+ .attr('stroke',h=>h.c).attr('stroke-width',h=>h.depth<=1?2:(h.data.rich?2:0)).attr('stroke-opacity',h=>h.depth>1?.5:1);
+nd.filter(h=>h.depth===1).append('circle').attr('r',6).attr('fill',h=>h.c);
+nd.filter(h=>h.depth>1&&h.data.rich).append('circle').attr('r',h=>SZ[h.depth]+4).attr('fill','none').attr('stroke',h=>h.c).attr('stroke-opacity',.6);
+nd.append('text').text(h=>h.depth===0?'Knowledge':h.data.name).attr('text-anchor','middle')
+ .attr('dy',h=>h.depth===0?5:SZ[h.depth]+(h.depth<=1?20:15))
+ .attr('fill',h=>h.depth<=2?'#ecebe6':'#c9c8c2').attr('font-family',h=>h.depth<=2?'"Source Serif 4",Georgia,serif':'Inter,sans-serif')
+ .attr('font-size',h=>[14,19,15,13,13,13][h.depth]).attr('font-weight',h=>h.depth<=2?600:400)
+ .attr('paint-order','stroke').attr('stroke','#16171b').attr('stroke-width',4).attr('class','lbl');
+nd.append('title').text(h=>h.data.name+(h.depth>1?' — '+path(h):''));
+
+let W=fig.clientWidth,H=fig.clientHeight,K=1,sel=null,lit=null;
+const curve=l=>{const s=l.source,t=l.target,mx=(s.x+t.x)/2*.35,my=(s.y+t.y)/2*.35;return `M${s.x},${s.y}Q${mx},${my} ${t.x},${t.y}`};
+const sim=d3.forceSimulation(nodes)
+ .force('x',d3.forceX(h=>h.tx).strength(h=>h.depth<=1?1:.35)).force('y',d3.forceY(h=>h.ty).strength(h=>h.depth<=1?1:.35))
+ .force('collide',d3.forceCollide(h=>SZ[h.depth]+(h.depth<=2?26:9)).strength(.8))
+ .force('link',d3.forceLink(tl).distance(l=>R[l.target.depth]-R[l.source.depth]).strength(.15))
+ .alphaDecay(.04)
+ .on('tick',()=>{tLines.attr('x1',l=>l.source.x).attr('y1',l=>l.source.y).attr('x2',l=>l.target.x).attr('y2',l=>l.target.y);
+  xPaths.attr('d',curve);nd.attr('transform',h=>`translate(${h.x},${h.y})`)});
+nd.call(d3.drag().on('start',(e,h)=>{if(!e.active)sim.alphaTarget(.15).restart();h.fx=h.x;h.fy=h.y})
+ .on('drag',(e,h)=>{h.fx=e.x;h.fy=e.y}).on('end',(e,h)=>{if(!e.active)sim.alphaTarget(0);h.fx=null;h.fy=null}));
+const zoom=d3.zoom().scaleExtent([.25,5]).on('zoom',e=>{g.attr('transform',e.transform);K=e.transform.k;labels()});
+svg.call(zoom).on('dblclick.zoom',null).on('click',()=>go(''));
+const fitT=()=>{const k=Math.min(W,H)/(2*R[5]+160);return d3.zoomIdentity.translate(W/2,H/2).scale(k)};
+const fit=()=>svg.transition().duration(500).call(zoom.transform,fitT());
+document.getElementById('zin').onclick=()=>svg.transition().duration(300).call(zoom.scaleBy,1.4);
+document.getElementById('zout').onclick=()=>svg.transition().duration(300).call(zoom.scaleBy,1/1.4);
+document.getElementById('zfit').onclick=fit;
+const ro=new ResizeObserver(()=>{const first=!W||!H;W=fig.clientWidth;H=fig.clientHeight;if(first)svg.call(zoom.transform,fitT())});ro.observe(fig);
+svg.call(zoom.transform,fitT());
+
+function labels(){const f=Math.pow(Math.min(K,1),-.75);nd.select('.lbl').attr('font-size',h=>FS[h.depth]*f).attr('dy',h=>h.depth===0?5*f:SZ[h.depth]+(h.depth<=1?20:15)*f);nd.select('.lbl').attr('display',h=>{if(h.depth<=1)return null;if(lit)return lit.has(h)?null:'none';return (h.depth===2&&K>.8)||(h.depth===3&&K>1.4)||K>2.2?null:'none'})}
+function highlight(h){sel=h;
+ if(!h){lit=null;nd.attr('class','node');tLines.attr('class',null);xPaths.attr('class',null);labels();return}
+ lit=new Set(nb.get(h));h.ancestors().forEach(a=>lit.add(a));
+ if(h.depth<=2)h.descendants().forEach(d=>lit.add(d));
+ if(h.depth===1)h.descendants().forEach(d=>xl.forEach(l=>{if(l.source===d)lit.add(l.target);if(l.target===d)lit.add(l.source)}));
+ nd.attr('class',n=>'node '+(lit.has(n)?'lit':'dim'));
+ tLines.attr('class',l=>lit.has(l.source)&&lit.has(l.target)?'lit':'dim');
+ const sub=new Set(h.depth<=2?h.descendants():[h]);
+ xPaths.attr('class',l=>sub.has(l.source)||sub.has(l.target)?'lit':'dim');
+ labels();
+ if(!matchMedia('(prefers-reduced-motion: reduce)').matches){let k,cx,cy;
+  if(h.depth<=2&&h.children){const pts=h.descendants();const xs=pts.map(p=>p.x),ys=pts.map(p=>p.y);
+   const x0=Math.min(...xs)-90,x1=Math.max(...xs)+90,y0=Math.min(...ys)-60,y1=Math.max(...ys)+60;
+   k=Math.min(2.2,W/(x1-x0),(H-60)/(y1-y0));cx=(x0+x1)/2;cy=(y0+y1)/2}
+  else{k=Math.max(K,1.4);cx=h.x;cy=h.y}
+  svg.transition().duration(650).call(zoom.transform,d3.zoomIdentity.translate(W/2-cx*k,H/2-cy*k).scale(k))}
+}
+
+const q=document.getElementById('q'),res=document.getElementById('res');let hits=[],hi=0;
+function showRes(){res.hidden=!hits.length;res.innerHTML=hits.map((h,i)=>`<li><button data-go="${h.data.id}" class="${i===hi?'on':''}"><span class="dot" style="background:${h.c}"></span>${esc(h.data.name)}<small>${esc(path(h).split(' · ').slice(-1)[0]||'Branch')}</small></button></li>`).join('')}
+q.addEventListener('input',()=>{const v=q.value.trim().toLowerCase();hi=0;
+ hits=v?nodes.filter(h=>h.depth&&(h.data.name.toLowerCase().includes(v)||h.data.d.toLowerCase().includes(v))).sort((a,b)=>(b.data.name.toLowerCase().includes(v))-(a.data.name.toLowerCase().includes(v))).slice(0,9):[];showRes()});
+q.addEventListener('keydown',e=>{if(e.key==='ArrowDown'){hi=Math.min(hi+1,hits.length-1);showRes();e.preventDefault()}
+ else if(e.key==='ArrowUp'){hi=Math.max(hi-1,0);showRes();e.preventDefault()}
+ else if(e.key==='Enter'&&hits[hi]){go(hits[hi].data.id);q.value='';hits=[];showRes()}
+ else if(e.key==='Escape'){hits=[];showRes()}});
+res.addEventListener('click',()=>{q.value='';hits=[];showRes()});
+
+const route=()=>render(decodeURIComponent(location.hash.slice(1)));
+addEventListener('hashchange',route);
+setTimeout(route,60);
+}
+</script>
+</body>
+</html>
